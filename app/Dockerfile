@@ -1,5 +1,6 @@
 # 1. Base image
-FROM python:3.10-slim
+FROM python:3.10-slim-bullseye
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
 
 # 2. Set working directory in container
 WORKDIR /app
