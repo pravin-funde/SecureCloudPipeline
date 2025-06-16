@@ -38,18 +38,25 @@ Initial base image (`python:3.10-slim`) had 90+ vulnerabilities (OS + Python pac
 - Used `--no-cache` and cleaned APT/apk caches
 
 ### 📉 Before (Debian-based)
-securecloud-flask (debian 12.11)
-Total: 90 (LOW: 68, MEDIUM: 18, HIGH: 3, CRITICAL: 1) + Python-pacakge vulnerabilities.
+    securecloud-flask (debian 12.11)
+    Total: 90 (LOW: 68, MEDIUM: 18, HIGH: 3, CRITICAL: 1) + Python-pacakge vulnerabilities.
 
 
 ### ✅ After (Alpine-based)
-securecloud-flask (alpine) and python package updates
-Total: 0 vulnerabilities 🎉
+    securecloud-flask (alpine) and python package updates
+    Total: 0 vulnerabilities 🎉
 
 
 > All scans are triggered via GitHub Actions on every push.
+## 🔐 Security Scan Results (CI Pipeline)
+    Results (as of latest commit):
 
----
+    Tool	Result
+    Trivy	✅ 0 vulnerabilities in image & deps
+    Semgrep	✅ 0 blocking issues from 1000+ rules
+
+    ✅ Semgrep SAST passed with p/default ruleset — critical rules like host="0.0.0.0" now avoided.
+    ---
 
 ## ⚙️ Tech Stack
 
@@ -74,6 +81,7 @@ Total: 0 vulnerabilities 🎉
 
 - ✅ Trivy integration for container scans
 - ✅ Docker hardening with 0 vulnerabilities
+- ✅ Semgrep SAST integration
 - ⏳ IaC & secrets scanning (next)
 - ⏳ Deploy to AWS securely via Terraform
 
