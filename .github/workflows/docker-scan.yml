@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - 'app/**'
-      - '.github\workflows\docker-scan.yml'
+      - '.github/workflows/docker-scan.yml'
 
 jobs:
   docker-scan:
