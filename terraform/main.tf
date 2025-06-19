@@ -56,6 +56,7 @@ resource "aws_s3_bucket_logging" "logging" {
 resource "aws_kms_key" "s3_key" {
   description             = "KMS key for S3 encryption"
   deletion_window_in_days = 10
+  enable_key_rotation     = true
 }
 
 # ---------------------------------------------------------
