@@ -5,7 +5,7 @@ on:
     paths:
       - 'app/**'
       - '.github/workflows/docker-scan.yml'
-      - 'terraform/**'
+      
 
 jobs:
   docker-scan:
@@ -39,9 +39,6 @@ jobs:
         with:
           args: detect --source=. --verbose --redact
 
-      - name: Run Checkov (Iac Scan)
-        uses: bridgecrewio/checkov-action@master
-        with:
-          directory: ./terraform
+      
 
       
