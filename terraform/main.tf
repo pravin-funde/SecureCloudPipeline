@@ -33,6 +33,8 @@ resource "aws_s3_bucket_versioning" "versioning" {
 }
 
 # Create KMS Key for encryption
+data "aws_caller_identity" "current" {}
+
 resource "aws_kms_key" "s3_key" {
   description             = "KMS key for S3 encryption"
   deletion_window_in_days = 10
@@ -43,22 +45,27 @@ resource "aws_kms_key" "s3_key" {
     Id      = "s3-kms-key",
     Statement = [
       {
-        Sid       = "Enable IAM User Permissions",
-        Effect    = "Allow",
-        Principal = {
-          AWS = "*"
+        Sid: "Allow root full access",
+        Effect: "Allow",
+        Principal: {
+          AWS: "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
         },
-        Action    = "kms:*",
-        Resource  = "*",
-        Condition = {
-          StringEquals = {
-            "kms:ViaService" = "s3.ap-south-1.amazonaws.com"
-          }
-        }
+        Action: "kms:*",
+        Resource: "*"
+      },
+      {
+        Sid: "Allow terraform-deployer full access",
+        Effect: "Allow",
+        Principal: {
+          AWS: "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/terraform-deployer"
+        },
+        Action: "kms:*",
+        Resource: "*"
       }
     ]
   })
 }
+
 
 # Enable server-side encryption on bucket
 resource "aws_s3_bucket_server_side_encryption_configuration" "encryption" {
@@ -88,7 +95,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "secure_bucket_lifecycle" {
   rule {
     id     = "basic-lifecycle"
     status = "Enabled"
-
+    filter {}
     expiration {
       days = 90
     }
