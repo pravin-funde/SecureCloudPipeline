@@ -9,10 +9,11 @@ provider "aws" {
 # Create a Secure S3 Bucket (Main App Bucket)
 # --------------------------------------------
 
+# Skip Checkov rules for secure bucket
 # checkov:skip=CKV2_AWS_62: Event notifications not needed for dev/demo
 # checkov:skip=CKV_AWS_144: Cross-region replication not required for dev
 resource "aws_s3_bucket" "secure_bucket" {
-  bucket = "securecloudpipeline-bucket"  # Must be globally unique
+  bucket = "securecloudpipeline-bucket" # Must be globally unique
 
   tags = {
     Name        = "securecloudpipeline"
@@ -103,8 +104,10 @@ resource "aws_s3_bucket_lifecycle_configuration" "secure_bucket_lifecycle" {
 # Logging Bucket (Receives Logs from App Bucket)
 # --------------------------------------------
 
-# checkov:skip=CKV2_AWS_62: Event notifications not needed for log bucket
-# checkov:skip=CKV_AWS_144: Cross-region replication not required for log bucket
+
+# Skip Checkov for log bucket
+# checkov:skip=CKV2_AWS_62: Event notifications not needed for dev/demo
+# checkov:skip=CKV_AWS_144: Cross-region replication not needed for demo
 resource "aws_s3_bucket" "log_bucket" {
   bucket = "securecloudpipeline-log-bucket"
 
