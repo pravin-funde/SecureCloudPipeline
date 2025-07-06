@@ -10,8 +10,8 @@ provider "aws" {
 # --------------------------------------------
 
 # Skip Checkov rules for secure bucket
-#checkov:skip=CKV2_AWS_62: Event notifications not needed for dev/demo
-#checkov:skip=CKV_AWS_144: Cross-region replication not required for dev
+# checkov:skip=CKV2_AWS_62: Event notifications not needed for dev/demo
+# checkov:skip=CKV_AWS_144: Cross-region replication not required for dev
 resource "aws_s3_bucket" "secure_bucket" {
   bucket = "securecloudpipeline-bucket" # Must be globally unique
 
@@ -106,8 +106,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "secure_bucket_lifecycle" {
 
 
 # Skip Checkov for log bucket
-#checkov:skip=CKV2_AWS_62: Event notifications not needed for dev/demo
-#checkov:skip=CKV_AWS_144: Cross-region replication not needed for demo
+# checkov:skip=CKV2_AWS_62: Event notifications not needed for dev/demo
+# checkov:skip=CKV_AWS_144: Cross-region replication not needed for demo
 resource "aws_s3_bucket" "log_bucket" {
   bucket = "securecloudpipeline-log-bucket"
 
