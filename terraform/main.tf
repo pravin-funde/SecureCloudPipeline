@@ -10,7 +10,7 @@ provider "aws" {
 # --------------------------------------------
 
 # checkov:skip=CKV2_AWS_62: Event notifications not needed for dev/demo
-# checkov:skip=CKV_AWS_144: Cross-region replication not needed for this project
+# checkov:skip=CKV_AWS_144: Cross-region replication not required for dev
 resource "aws_s3_bucket" "secure_bucket" {
   bucket = "securecloudpipeline-bucket"  # Must be globally unique
 
@@ -81,12 +81,30 @@ resource "aws_s3_bucket_public_access_block" "block_public_access" {
   restrict_public_buckets = true
 }
 
+resource "aws_s3_bucket_lifecycle_configuration" "secure_bucket_lifecycle" {
+  bucket = aws_s3_bucket.secure_bucket.id
+
+  rule {
+    id     = "basic-lifecycle"
+    status = "Enabled"
+
+    expiration {
+      days = 90
+    }
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
+    }
+  }
+}
+
+
 # --------------------------------------------
 # Logging Bucket (Receives Logs from App Bucket)
 # --------------------------------------------
 
-# checkov:skip=CKV2_AWS_62: Event notifications not needed for dev
-# checkov:skip=CKV_AWS_144: Cross-region replication not needed for dev
+# checkov:skip=CKV2_AWS_62: Event notifications not needed for log bucket
+# checkov:skip=CKV_AWS_144: Cross-region replication not required for log bucket
 resource "aws_s3_bucket" "log_bucket" {
   bucket = "securecloudpipeline-log-bucket"
 
@@ -143,6 +161,11 @@ resource "aws_s3_bucket_lifecycle_configuration" "log_bucket_lifecycle" {
 
     noncurrent_version_expiration {
       noncurrent_days = 30
+    }
+
+     # Abort incomplete multipart uploads after 7 days
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
     }
   }
 }
