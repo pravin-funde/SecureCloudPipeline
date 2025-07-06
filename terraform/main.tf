@@ -142,7 +142,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "log_bucket_lifecycle" {
     }
 
     noncurrent_version_expiration {
-      days = 30
+      noncurrent_days = 30
     }
   }
 }
