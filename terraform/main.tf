@@ -2,11 +2,11 @@
 # Provider Block: Configure AWS provider
 # --------------------------------------------
 provider "aws" {
-  region = "us-east-1"  # Change this if deploying in a different AWS region
+  region = "ap-south-1"  # Change this if deploying in a different AWS region
 }
 
 # --------------------------------------------
-# Create a Secure S3 Bucket
+# Create a Secure S3 Bucket (Main App Bucket)
 # --------------------------------------------
 
 # checkov:skip=CKV2_AWS_62: Event notifications not needed for dev/demo
@@ -19,13 +19,10 @@ resource "aws_s3_bucket" "secure_bucket" {
     Environment = "Dev"
   }
 
-  # Allows Terraform to delete the bucket even if it has objects in it (useful for dev/test environments)
-  force_destroy = true
+  force_destroy = true  # Allows deletion even with objects (for dev/test use)
 }
 
-# ---------------------------------------------------------
-# S3 Versioning - Protects against accidental deletions
-# ---------------------------------------------------------
+# Enable versioning to protect against accidental deletion
 resource "aws_s3_bucket_versioning" "versioning" {
   bucket = aws_s3_bucket.secure_bucket.id
 
@@ -34,9 +31,7 @@ resource "aws_s3_bucket_versioning" "versioning" {
   }
 }
 
-# ---------------------------------------------------------
-# KMS Key - For encrypting objects in the bucket
-# ---------------------------------------------------------
+# Create KMS Key for encryption
 resource "aws_kms_key" "s3_key" {
   description             = "KMS key for S3 encryption"
   deletion_window_in_days = 10
@@ -56,7 +51,7 @@ resource "aws_kms_key" "s3_key" {
         Resource  = "*",
         Condition = {
           StringEquals = {
-            "kms:ViaService" = "s3.us-east-1.amazonaws.com"
+            "kms:ViaService" = "s3.ap-south-1.amazonaws.com"
           }
         }
       }
@@ -64,10 +59,7 @@ resource "aws_kms_key" "s3_key" {
   })
 }
 
-
-# ---------------------------------------------------------
-# Encryption Configuration - Uses AWS KMS
-# ---------------------------------------------------------
+# Enable server-side encryption on bucket
 resource "aws_s3_bucket_server_side_encryption_configuration" "encryption" {
   bucket = aws_s3_bucket.secure_bucket.id
 
@@ -79,33 +71,22 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "encryption" {
   }
 }
 
-# --------------------------------------------
-# Apply Strict Public Access Blocking
-# --------------------------------------------
+# Block all public access to secure bucket
 resource "aws_s3_bucket_public_access_block" "block_public_access" {
   bucket = aws_s3_bucket.secure_bucket.id
 
-  # Deny all public ACLs
-  block_public_acls = true
-
-  # Deny all public bucket policies
-  block_public_policy = true
-
-  # Ignore public ACLs set by others
-  ignore_public_acls = true
-
-  # Prevent public access even if bucket policy allows it
+  block_public_acls       = true
+  ignore_public_acls      = true
+  block_public_policy     = true
   restrict_public_buckets = true
 }
 
+# --------------------------------------------
+# Logging Bucket (Receives Logs from App Bucket)
+# --------------------------------------------
 
-
-# ---------------------------------------------------------
-# Logging Bucket - Stores access logs from main bucket
-# ---------------------------------------------------------
-
-# checkov:skip=CKV2_AWS_62: Event notifications not needed for log bucket in dev
-# checkov:skip=CKV_AWS_144: Cross-region replication not required for log bucket in dev
+# checkov:skip=CKV2_AWS_62: Event notifications not needed for dev
+# checkov:skip=CKV_AWS_144: Cross-region replication not needed for dev
 resource "aws_s3_bucket" "log_bucket" {
   bucket = "securecloudpipeline-log-bucket"
 
@@ -116,6 +97,8 @@ resource "aws_s3_bucket" "log_bucket" {
 
   force_destroy = true
 }
+
+# Versioning for log bucket
 resource "aws_s3_bucket_versioning" "log_bucket_versioning" {
   bucket = aws_s3_bucket.log_bucket.id
 
@@ -123,15 +106,8 @@ resource "aws_s3_bucket_versioning" "log_bucket_versioning" {
     status = "Enabled"
   }
 }
-#versioning for log bucket
-resource "aws_s3_bucket_versioning" "log_bucket_versioning" {
-  bucket = aws_s3_bucket.log_bucket.id
 
-  versioning_configuration {
-    status = "Enabled"
-  }
-}
-#encryption with kms for log_bucket
+# Encryption for log bucket with same KMS key
 resource "aws_s3_bucket_server_side_encryption_configuration" "log_bucket_encryption" {
   bucket = aws_s3_bucket.log_bucket.id
 
@@ -142,7 +118,9 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "log_bucket_encryp
     }
   }
 }
-#block all public accessresource "aws_s3_bucket_public_access_block" "log_bucket_block_public_access" {
+
+# Block public access for log bucket (was malformed earlier ❌)
+resource "aws_s3_bucket_public_access_block" "log_bucket_block_public_access" {
   bucket = aws_s3_bucket.log_bucket.id
 
   block_public_acls       = true
@@ -150,7 +128,8 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "log_bucket_encryp
   block_public_policy     = true
   restrict_public_buckets = true
 }
-#lifecycle policy to pass checkov
+
+# Lifecycle policy to expire old logs
 resource "aws_s3_bucket_lifecycle_configuration" "log_bucket_lifecycle" {
   bucket = aws_s3_bucket.log_bucket.id
 
@@ -168,9 +147,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "log_bucket_lifecycle" {
   }
 }
 
-# ---------------------------------------------------------
-# Logging to log bucket
-# ---------------------------------------------------------
+# Enable logging from secure_bucket to log_bucket
 resource "aws_s3_bucket_logging" "logging" {
   bucket = aws_s3_bucket.secure_bucket.id
 
