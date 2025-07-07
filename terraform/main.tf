@@ -32,39 +32,6 @@ resource "aws_s3_bucket_versioning" "versioning" {
   }
 }
 
-# Create KMS Key for encryption
-data "aws_caller_identity" "current" {}
-
-resource "aws_kms_key" "s3_key" {
-  description             = "KMS key for S3 encryption"
-  deletion_window_in_days = 10
-  enable_key_rotation     = true
-
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Id      = "s3-kms-key",
-    Statement = [
-      {
-        Sid: "Allow root full access",
-        Effect: "Allow",
-        Principal: {
-          AWS: "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
-        },
-        Action: "kms:*",
-        Resource: "*"
-      },
-      {
-        Sid: "Allow terraform-deployer full access",
-        Effect: "Allow",
-        Principal: {
-          AWS: "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/terraform-deployer"
-        },
-        Action: "kms:*",
-        Resource: "*"
-      }
-    ]
-  })
-}
 
 
 # Enable server-side encryption on bucket
@@ -74,7 +41,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "encryption" {
   rule {
     apply_server_side_encryption_by_default {
       sse_algorithm     = "aws:kms"
-      kms_master_key_id = aws_kms_key.s3_key.arn
+      kms_master_key_id = "alias/aws/s3" 
     }
   }
 }
@@ -142,7 +109,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "log_bucket_encryp
   rule {
     apply_server_side_encryption_by_default {
       sse_algorithm     = "aws:kms"
-      kms_master_key_id = aws_kms_key.s3_key.arn
+      kms_master_key_id = "alias/aws/s3"
     }
   }
 }
