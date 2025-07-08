@@ -53,7 +53,7 @@ jobs:
         working-directory: ./app
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        run: snyk test --file=app\requirements.txt --package-manager=pip
+        run: snyk test --file=requirements.txt --package-manager=pip
 
 
       
