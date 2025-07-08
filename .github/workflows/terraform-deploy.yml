@@ -43,11 +43,11 @@ jobs:
         with:
           directory: terraform
           quiet: true
-          soft_fail: true
+        #  soft_fail: true
 
           skip_check: "CKV2_AWS_62,CKV_AWS_144" # skipping event notifications enabled,cross-region replication enabled checks , not needed for dev
 
 
-      - name: Terraform Apply
-        working-directory: terraform
-        run: terraform apply -auto-approve
+    #  - name: Terraform Apply
+    #    working-directory: terraform
+    #    run: terraform apply -auto-approve
