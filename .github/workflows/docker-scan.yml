@@ -56,5 +56,23 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         run: snyk test --file=requirements.txt --package-manager=pip
 
+      - name: Run Trivy and save JSON report
+        run: |
+          mkdir -p scan-reports
+          trivy image --format json -o scan-reports/trivy-report.json securecloud-flask
+
+      - name: Run Semgrep and save JSON report
+        run: |
+          semgrep --config=p/default --json --output scan-reports/semgrep-report.json
+
+      - name: Run Gitleaks and save JSON report
+        run: |
+          gitleaks detect --source=. --report-format=json --report-path=scan-reports/gitleaks-report.json
+
+      - name: Run Snyk and save JSON report
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: |
+          snyk test --file=app/requirements.txt --package-manager=pip --json > scan-reports/snyk-report.json
 
       
