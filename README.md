@@ -8,21 +8,22 @@ A modern, security-first DevSecOps pipeline that scans, hardens, and securely de
 
 ✅ Build a secure Docker image  
 ✅ Automatically scan for vulnerabilities  
-✅ Detect secrets, misconfigurations, and insecure code  
+✅ Detect secrets, misconfigurations, insecure code & dependencies  
 ✅ Deploy securely to cloud using Terraform
 
 ---
 
 ## 🛠️ Tools & Stages
 
-| Stage                  | Tool Used         | Purpose                                  |
-|------------------------|-------------------|------------------------------------------|
-| Container Scanning     | **Trivy**         | Scan Docker image for OS & app CVEs      |
-| Static Analysis (SAST) | **Semgrep**       | Scan Python source code for bugs/CVEs    |
-| IaC Security           | **Checkov**       | Audit Terraform configs for misconfigs   |
-| Secrets Detection      | **Gitleaks**      | Detect hardcoded secrets in repo         |
-| CI/CD                  | **GitHub Actions**| Automate builds, scans, reporting        |
-| Deployment             | **Terraform (AWS)**| Provision secure infrastructure         |
+| Stage                  | Tool Used          | Purpose                                    |
+|------------------------|--------------------|--------------------------------------------|
+| Container Scanning     | **Trivy**          | Scan Docker image for OS & app CVEs        |
+| Static Analysis (SAST) | **Semgrep**        | Scan Python source code for bugs/CVEs      |
+| Dependency Scanning (SCA) | **Snyk**       | Identify vulnerable Python dependencies    |
+| IaC Security           | **Checkov**        | Audit Terraform configs for misconfigs     |
+| Secrets Detection      | **Gitleaks**       | Detect hardcoded secrets in repo           |
+| CI/CD                  | **GitHub Actions** | Automate builds, scans, reporting          |
+| Deployment             | **Terraform (AWS)**| Provision secure infrastructure            |
 
 ---
 
@@ -53,12 +54,13 @@ Initial base image (`python:3.10-slim`) had 90+ vulnerabilities (OS + Python pac
 
 Results (as of latest commit):
 
-| Tool     | Result                                 |
-|----------|----------------------------------------|
-| Trivy    | ✅ 0 vulnerabilities in image & deps   |
-| Semgrep  | ✅ 0 blocking issues from 1000+ rules  |
-| Gitleaks | ✅ No hardcoded secrets detected       |
-| Checkov  | ✅ Passed essential IaC policies       |
+| Tool     | Result                                   |
+|----------|------------------------------------------|
+| Trivy    | ✅ 0 vulnerabilities in image & deps     |
+| Semgrep  | ✅ 0 blocking issues from 1000+ rules    |
+| Snyk     | ✅ No vulnerable packages found          |
+| Gitleaks | ✅ No hardcoded secrets detected         |
+| Checkov  | ✅ Passed essential IaC policies         |
 
 ✅ Semgrep passed with p/default ruleset — critical rules like `host="0.0.0.0"` avoided.
 
@@ -75,12 +77,18 @@ Results (as of latest commit):
 
 ---
 
+## 🧾 Reports Directory
+
+All scan outputs (`.json`) are generated automatically and saved to the [`scan-reports/`](scan-reports/) directory. These are useful for audit and visibility.
+
+---
+
 ## ⚙️ Tech Stack
 
 - **Language**: Python (Flask)
 - **Containerization**: Docker
 - **CI/CD**: GitHub Actions
-- **Security**: Trivy, Semgrep, Gitleaks, Checkov
+- **Security**: Trivy, Semgrep, Gitleaks, Snyk, Checkov
 - **Infrastructure as Code**: Terraform
 - **Cloud Provider**: AWS
 

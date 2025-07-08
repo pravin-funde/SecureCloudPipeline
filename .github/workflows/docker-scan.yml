@@ -60,6 +60,8 @@ jobs:
         run: |
           mkdir -p scan-reports
           trivy image --format json -o scan-reports/trivy-report.json securecloud-flask
+      - name: Install Semgrep CLI
+        run: pip install semgrep
 
       - name: Run Semgrep and save JSON report
         run: |
